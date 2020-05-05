@@ -1,20 +1,19 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
-apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 ext {
-    bintrayRepo = 'maven' // Name of the Bintray repo you created
-    bintrayName = 'com.gasbuddy.mobile:rxsse' // Bintray package name
+    bintrayRepo = 'maven'
+    bintrayName = 'com.gasbuddy.mobile:rxsse'
 
     publishedGroupId = 'com.gasbuddy.mobile'
     artifact = 'rxsse'
-    libraryVersion = '0.9' // Version of the library you created in Bintray
+    libraryVersion = '0.9'
 
-    libraryName = 'RxSSE' // It is generally the module name
-    libraryDescription = 'A retrofit call adapter that translates server sent events into an RxJava/RxKotlin stream' // Small description of the library
+    libraryName = 'RxSSE'
+    libraryDescription = 'A retrofit call adapter that translates server sent events into an RxJava/RxKotlin stream'
 
     siteUrl = 'https://github.com/gas-buddy/RxSSE'
     gitUrl = 'https://github.com/gas-buddy/RxSSE.git'
@@ -70,99 +69,69 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    api "com.squareup.okio:okio:2.6.0"
-    api "com.squareup.okhttp3:okhttp:4.6.0"
-    api "com.squareup.retrofit2:retrofit:2.8.1"
-    api "io.reactivex.rxjava3:rxjava:3.0.2"
-    api "com.github.akarnokd:rxjava3-bridge:3.0.0"
-    api "io.reactivex.rxjava3:rxandroid:3.0.0"
-
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation "com.squareup.okio:okio:2.6.0"
+    implementation "com.squareup.okhttp3:okhttp:4.6.0"
+    implementation "com.squareup.retrofit2:retrofit:2.8.1"
+    implementation "io.reactivex.rxjava3:rxjava:3.0.2"
+    implementation "com.github.akarnokd:rxjava3-bridge:3.0.0"
+    implementation "io.reactivex.rxjava3:rxandroid:3.0.0"
 }
 
-group = publishedGroupId
+group = 'com.gasbuddy.mobile'
 version = libraryVersion
 
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            packaging 'aar'
-            groupId publishedGroupId
-            artifactId artifact
-
-            name libraryName
-            description libraryDescription
-            url siteUrl
-
-            licenses {
-                license {
-                    name licenseName
-                    url licenseUrl
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                pom {
+                    name = libraryName
+                    description = libraryDescription
+                    url = siteUrl
+                    licenses {
+                        license {
+                            name = licenseName
+                            url = licenseUrl
+                        }
+                    }
+                    scm {
+                        url = gitUrl
+                    }
                 }
-            }
-            developers {
-                developer {
-                    id developerId
-                    name developerName
-                    email developerEmail
-                }
-            }
-            scm {
-                connection gitUrl
-                developerConnection gitUrl
-                url siteUrl
+
+                // Applies the component for the release build variant.
+                from components.release
+
+                groupId = publishedGroupId
+                artifactId = artifact
+                version = libraryVersion
             }
         }
     }
-}
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
+    bintray {
+        user = bintrayUsername
+        key = bintrayApiKey
 
-//task javadoc(type: Javadoc) {
-//    source = android.sourceSets.main.java.srcDirs
-//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-//}
-
-//task javadocJar(type: Jar, dependsOn: javadoc) {
-//    classifier = 'javadoc'
-//    from javadoc.destinationDir
-//}
-
-artifacts {
-//    archives javadocJar
-    archives sourcesJar
-}
-
-bintray {
-    user = bintrayUsername
-    key = bintrayApiKey
-
-    pkg { userOrg = bintrayUserOrg }
-
-    configurations = ['archives']
-    pkg {
-        repo = bintrayRepo
-        name = bintrayName
-        desc = libraryDescription
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = allLicenses
-        dryRun = false
-        publish = true
-        publicDownloadNumbers = true
-        version {
+        publications = ['release']
+        pkg {
+            repo = bintrayRepo
+            name = bintrayName
+            userOrg = bintrayUserOrg
             desc = libraryDescription
+            websiteUrl = siteUrl
+            vcsUrl = gitUrl
+            licenses = allLicenses
+            dryRun = false
+            publish = true
+            publicDownloadNumbers = true
+            version {
+                desc = libraryDescription
+            }
         }
-    }
 
-    // publish = true // when jcenter link is set up
+        // publish = true // when jcenter link is set up
+    }
 }
