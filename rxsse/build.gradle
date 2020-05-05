@@ -1,0 +1,168 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+ext {
+    bintrayRepo = 'maven' // Name of the Bintray repo you created
+    bintrayName = 'com.gasbuddy.mobile:rxsse' // Bintray package name
+
+    publishedGroupId = 'com.gasbuddy.mobile'
+    artifact = 'rxsse'
+    libraryVersion = '0.9' // Version of the library you created in Bintray
+
+    libraryName = 'RxSSE' // It is generally the module name
+    libraryDescription = 'A retrofit call adapter that translates server sent events into an RxJava/RxKotlin stream' // Small description of the library
+
+    siteUrl = 'https://github.com/gas-buddy/RxSSE'
+    gitUrl = 'https://github.com/gas-buddy/RxSSE.git'
+
+    developerId = 'fergusonm'
+    developerName = 'Michael Ferguson'
+    developerEmail = 'fergusonm@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+
+    //Bintray Credentials
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+    bintrayUsername = properties.getProperty('BINTRAY_USERNAME')
+    bintrayUserOrg = properties.getProperty('BINTRAY_ORG')
+    bintrayApiKey = properties.getProperty('BINTRAY_API_KEY')
+}
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.2.0'
+
+    api "com.squareup.okio:okio:2.6.0"
+    api "com.squareup.okhttp3:okhttp:4.6.0"
+    api "com.squareup.retrofit2:retrofit:2.8.1"
+    api "io.reactivex.rxjava3:rxjava:3.0.2"
+    api "com.github.akarnokd:rxjava3-bridge:3.0.0"
+    api "io.reactivex.rxjava3:rxandroid:3.0.0"
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+group = publishedGroupId
+version = libraryVersion
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            packaging 'aar'
+            groupId publishedGroupId
+            artifactId artifact
+
+            name libraryName
+            description libraryDescription
+            url siteUrl
+
+            licenses {
+                license {
+                    name licenseName
+                    url licenseUrl
+                }
+            }
+            developers {
+                developer {
+                    id developerId
+                    name developerName
+                    email developerEmail
+                }
+            }
+            scm {
+                connection gitUrl
+                developerConnection gitUrl
+                url siteUrl
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+//task javadoc(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
+
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
+
+artifacts {
+//    archives javadocJar
+    archives sourcesJar
+}
+
+bintray {
+    user = bintrayUsername
+    key = bintrayApiKey
+
+    pkg { userOrg = bintrayUserOrg }
+
+    configurations = ['archives']
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = allLicenses
+        dryRun = false
+        publish = true
+        publicDownloadNumbers = true
+        version {
+            desc = libraryDescription
+        }
+    }
+
+    // publish = true // when jcenter link is set up
+}
