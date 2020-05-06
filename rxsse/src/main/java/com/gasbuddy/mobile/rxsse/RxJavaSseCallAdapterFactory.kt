@@ -11,6 +11,11 @@ import retrofit2.http.Streaming
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
+/**
+ * The call adapter that converts the SSE formatted web service data into Observables.
+ * @param messageProcessor the processor that converts the data class into something usable by your code.
+ * @param scheduler the rx thread to run on
+ */
 class RxJavaSseCallAdapterFactory(
     private val scheduler: Scheduler = Schedulers.io(),
     private val messageProcessor: MessageProcessor

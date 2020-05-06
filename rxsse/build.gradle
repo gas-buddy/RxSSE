@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'org.jetbrains.dokka'
 
 ext {
     bintrayRepo = 'maven'
@@ -71,16 +72,31 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    implementation "com.squareup.okio:okio:2.6.0"
-    implementation "com.squareup.okhttp3:okhttp:4.6.0"
-    implementation "com.squareup.retrofit2:retrofit:2.8.1"
-    implementation "io.reactivex.rxjava3:rxjava:3.0.2"
-    implementation "com.github.akarnokd:rxjava3-bridge:3.0.0"
-    implementation "io.reactivex.rxjava3:rxandroid:3.0.0"
+    api "com.squareup.okio:okio:2.6.0"
+    api "com.squareup.okhttp3:okhttp:4.6.0"
+    api "com.squareup.retrofit2:retrofit:2.8.1"
+    api "io.reactivex.rxjava3:rxjava:3.0.2"
+    api "com.github.akarnokd:rxjava3-bridge:3.0.0"
+    api "io.reactivex.rxjava3:rxandroid:3.0.0"
 }
 
 group = 'com.gasbuddy.mobile'
 version = libraryVersion
+
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "$buildDir/javadoc"
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+task javadocJar(type: Jar, dependsOn: dokka) {
+    archiveClassifier.set('javadoc')
+    from dokka.outputDirectory
+}
 
 afterEvaluate {
     publishing {
@@ -103,6 +119,8 @@ afterEvaluate {
 
                 // Applies the component for the release build variant.
                 from components.release
+                artifact javadocJar
+                artifact sourceJar
 
                 groupId = publishedGroupId
                 artifactId = artifact
@@ -116,6 +134,7 @@ afterEvaluate {
         key = bintrayApiKey
 
         publications = ['release']
+//        configurations = ['archives']
         pkg {
             repo = bintrayRepo
             name = bintrayName
@@ -126,7 +145,6 @@ afterEvaluate {
             licenses = allLicenses
             dryRun = false
             publish = true
-            publicDownloadNumbers = true
             version {
                 desc = libraryDescription
             }
