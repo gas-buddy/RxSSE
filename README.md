@@ -1,5 +1,5 @@
 # RxSSE
-A Retrofit call adapter factory that emits SSE streamed events as RxJava observables.
+RxSSE is a Retrofit call adapter factory that emits Server Sent Events streamed as RxJava observables.
 
 ## How to use it?
 #### Define a `MessageProcessor`:
